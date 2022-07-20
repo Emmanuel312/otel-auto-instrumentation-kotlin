@@ -1,0 +1,32 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+  hostmetrics:
+    collection_interval: 1m
+    scrapers:
+      cpu:
+      load:
+      memory:
+      disk:
+      filesystem:
+      network:
+      paging:
+      processes:
+
+processors:
+  batch:
+
+exporters:
+  logging:
+    logLevel: DEBUG
+  prometheus:
+    endpoint: "localhost:8889"
+
+service:
+  pipelines:
+    metrics:
+      receivers: [otlp, hostmetrics]
+      processors: [batch]
+      exporters: [prometheus]

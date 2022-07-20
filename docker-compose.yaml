@@ -1,0 +1,45 @@
+version: '3'
+services:
+  app:
+    build: ./
+    environment:
+      OTEL_SERVICE_NAME: "agent-example-app"
+      # Logs are disabled by default
+    ports:
+      - "8080:8080"
+    depends_on:
+      - collector
+    networks:
+      - otel-network
+  collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    volumes:
+      - ./otel-config.yaml:/otel-config.yaml
+    networks:
+      - otel-network
+    command: ["--config=/otel-config.yaml"]
+    expose:
+      - "4317"
+      - "8888"   # Prometheus metrics exposed by the collector
+      - "8889"   # Prometheus exporter metrics
+    ports:
+      - "4317:4317"
+      - "8888:8888"   # Prometheus metrics exposed by the collector
+      - "8889:8889"   # Prometheus exporter metrics
+    depends_on:
+      - prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9000:9090"
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - prometheus-data:/prometheus
+    networks:
+      - otel-network
+    command: --web.enable-lifecycle  --config.file=/etc/prometheus/prometheus.yml
+volumes:
+  prometheus-data:
+networks:
+  otel-network:
+    driver: bridge
