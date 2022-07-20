@@ -4,7 +4,7 @@ receivers:
       grpc:
       http:
   hostmetrics:
-    collection_interval: 1m
+    collection_interval: 15s
     scrapers:
       cpu:
       load:
@@ -15,18 +15,17 @@ receivers:
       paging:
       processes:
 
-processors:
-  batch:
-
 exporters:
   logging:
     logLevel: DEBUG
   prometheus:
-    endpoint: "localhost:8889"
+    endpoint: "127.0.0.1:8889"
 
 service:
   pipelines:
     metrics:
       receivers: [otlp, hostmetrics]
-      processors: [batch]
       exporters: [prometheus]
+    traces:
+      receivers: [otlp]
+      exporters: [logging]
